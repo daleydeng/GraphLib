@@ -31,9 +31,10 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.DataResult;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.util.ObjectType;
@@ -48,7 +49,7 @@ public final class NodeEntityType implements ObjectType {
      * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
      */
     public static final Codec<NodeEntityType> REF_CODEC =
-        GraphUniverse.ATTACHMENT_KEY.retrieveWithCodecResult(ResourceLocation.CODEC, (universe, id) -> {
+        GraphUniverse.ATTACHMENT_KEY.retrieveWithCodecResult(Identifier.CODEC, (universe, id) -> {
             NodeEntityType type = universe.getNodeEntityType(id);
             if (type == null) return DataResult.error(
                 () -> "Node entity type '" + id + "' does not exist in universe '" + universe.getId() + "'");
@@ -65,10 +66,10 @@ public final class NodeEntityType implements ObjectType {
         return GraphUniverse.ATTACHMENT_KEY.attachingCodec(universe, REF_CODEC);
     }
 
-    private final @NotNull ResourceLocation id;
+    private final @NotNull Identifier id;
     private final @NotNull Codec<? extends NodeEntity> codec;
 
-    private NodeEntityType(@NotNull ResourceLocation id, @NotNull Codec<? extends NodeEntity> codec) {
+    private NodeEntityType(@NotNull Identifier id, @NotNull Codec<? extends NodeEntity> codec) {
         this.id = id;
         this.codec = codec;
     }
@@ -79,7 +80,7 @@ public final class NodeEntityType implements ObjectType {
      * @return this type's id.
      */
     @Override
-    public @NotNull ResourceLocation getId() {
+    public @NotNull Identifier getId() {
         return id;
     }
 
@@ -120,7 +121,7 @@ public final class NodeEntityType implements ObjectType {
      * @return a new node entity type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull NodeEntityType of(@NotNull ResourceLocation id, @NotNull Codec<? extends NodeEntity> codec) {
+    public static @NotNull NodeEntityType of(@NotNull Identifier id, @NotNull Codec<? extends NodeEntity> codec) {
         return new NodeEntityType(id, codec);
     }
 
@@ -132,7 +133,7 @@ public final class NodeEntityType implements ObjectType {
      * @return a new node entity type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull NodeEntityType of(@NotNull ResourceLocation id, @NotNull Supplier<NodeEntity> supplier) {
-        return new NodeEntityType(id, Codec.unit(supplier));
+    public static @NotNull NodeEntityType of(@NotNull Identifier id, @NotNull Supplier<NodeEntity> supplier) {
+        return new NodeEntityType(id, MapCodec.unitCodec(supplier));
     }
 }

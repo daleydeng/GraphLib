@@ -33,7 +33,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.util.Tuple;
 
 import com.kneelawk.codextra.api.Codextra;
 import com.kneelawk.codextra.api.attach.AttachmentKey;
@@ -182,8 +181,8 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
 
     private @NotNull Serial toSerial() {
         var existingNodes = graph.stream().toList();
-        var nodeIndexMap = IntStream.range(0, existingNodes.size()).mapToObj(i -> new Tuple<>(existingNodes.get(i), i))
-            .collect(Collectors.toMap(Tuple::getA, Tuple::getB));
+        var nodeIndexMap = IntStream.range(0, existingNodes.size()).mapToObj(i -> Map.entry(existingNodes.get(i), i))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         List<Optional<SerialNode>> serialNodes = new ObjectArrayList<>(existingNodes.size());
         for (var node : existingNodes) {

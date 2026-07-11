@@ -1,40 +1,73 @@
-/*
- * MIT License
- *
- * Copyright (c) 2024 Kneelawk.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
- */
-
 plugins {
-    id("com.kneelawk.submodule")
-    id("com.kneelawk.versioning")
-    id("com.kneelawk.kpublish")
+    id("net.fabricmc.fabric-loom")
+    `maven-publish`
 }
 
-submodule {
-    setLibsDirectory()
-    applyXplatConnection(":core-xplat")
-    setupJavadoc()
+val java_version: String by project
+val project_version: String by project
+val maven_group: String by project
+val archives_base_name: String by project
+val minecraft_version: String by project
+val fabric_loader_version: String by project
+val fapi_version: String by project
+val codextra_version: String by project
+val common_events_version: String by project
+
+val xplatProject = project(":core-xplat")
+
+group = maven_group
+version = project_version
+
+repositories {
+    mavenLocal()
+    maven("https://maven.kneelawk.com/releases/")
 }
 
-kpublish {
-    createPublication()
+base {
+    archivesName.set("$archives_base_name-core-fabric")
+}
+
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(java_version))
+    withSourcesJar()
+}
+
+sourceSets.named("main") {
+    java.srcDir(xplatProject.file("src/main/java"))
+    resources.srcDir(xplatProject.file("src/main/resources"))
+}
+
+
+
+dependencies {
+    minecraft("com.mojang:minecraft:$minecraft_version")
+    implementation("net.fabricmc:fabric-loader:$fabric_loader_version")
+    implementation("net.fabricmc.fabric-api:fabric-api:$fapi_version")
+
+    implementation("io.github.daleydeng.codextra:codextra-fabric:$codextra_version")
+    implementation("io.github.daleydeng.common-events:common-events-fabric:$common_events_version")
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.release.set(java_version.toInt())
+}
+
+tasks.processResources {
+    inputs.property("version", project.version)
+    inputs.property("mod_id", "graphlib")
+
+
+    filesMatching("fabric.mod.json") {
+        expand("version" to project.version, "mod_id" to "graphlib")
+    }
+
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            artifactId = "$archives_base_name-core-fabric"
+            from(components["java"])
+        }
+    }
 }

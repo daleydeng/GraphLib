@@ -1,43 +1,43 @@
-/*
- * MIT License
- *
- * Copyright (c) 2024 Kneelawk.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
- */
-
 plugins {
-    id("com.kneelawk.submodule")
-    id("com.kneelawk.versioning")
-    id("com.kneelawk.kpublish")
+    id("net.fabricmc.fabric-loom")
+    `maven-publish`
 }
 
-submodule {
-    setRefmaps("graphlib-core")
-    setupJavadoc()
-    val codextra_version: String by project
-    xplatExternalDependency { "com.kneelawk.codextra:codextra-$it:$codextra_version" }
-    val common_events_version: String by project
-    xplatExternalDependency { "com.kneelawk.common-events:common-events-$it:$common_events_version" }
+val java_version: String by project
+val project_version: String by project
+val maven_group: String by project
+val archives_base_name: String by project
+val minecraft_version: String by project
+val fabric_loader_version: String by project
+val codextra_version: String by project
+val common_events_version: String by project
+
+group = maven_group
+version = project_version
+
+repositories {
+    mavenLocal()
+    maven("https://maven.kneelawk.com/releases/")
 }
 
-kpublish {
-    createPublication("intermediary")
+base {
+    archivesName.set("$archives_base_name-core-xplat")
+}
+
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(java_version))
+    withSourcesJar()
+}
+
+dependencies {
+    minecraft("com.mojang:minecraft:$minecraft_version")
+    compileOnly("net.fabricmc:fabric-loader:$fabric_loader_version")
+
+    // The Fabric build is currently the only supported target, so use the Fabric variants directly.
+    implementation("io.github.daleydeng.codextra:codextra-fabric:$codextra_version")
+    implementation("io.github.daleydeng.common-events:common-events-fabric:$common_events_version")
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.release.set(java_version.toInt())
 }

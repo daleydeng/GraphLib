@@ -29,7 +29,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents;
 import net.fabricmc.loader.api.FabricLoader;
 
 import com.kneelawk.graphlib.impl.GLLog;
@@ -48,12 +48,12 @@ public class GraphLibFabricMod implements ModInitializer {
         CommandRegistrationCallback.EVENT.register(
             (dispatcher, context, environment) -> GraphLibImpl.registerCommands(dispatcher, context));
 
-        ServerChunkEvents.CHUNK_LOAD.register((world, chunk) -> {
+        ServerChunkEvents.CHUNK_LOAD.register((world, chunk, generated) -> {
             try {
                 StorageHelper.getStorage(world).onWorldChunkLoad(chunk.getPos());
             } catch (Exception e) {
                 GLLog.error("Error loading chunk in GraphWorldStorage. World: '{}'/{}, Chunk: {}", world,
-                    world.dimension().location(), chunk.getPos(), e);
+                    world.dimension().identifier(), chunk.getPos(), e);
             }
         });
         ServerChunkEvents.CHUNK_UNLOAD.register((world, chunk) -> {
@@ -63,23 +63,23 @@ public class GraphLibFabricMod implements ModInitializer {
                 storage.onWorldChunkUnload(chunk.getPos());
             } catch (Exception e) {
                 GLLog.error("Error unloading chunk in GraphWorldStorage. World: '{}'/{}, Chunk: {}", world,
-                    world.dimension().location(), chunk.getPos(), e);
+                    world.dimension().identifier(), chunk.getPos(), e);
             }
         });
-        ServerTickEvents.END_WORLD_TICK.register(world -> {
+        ServerTickEvents.END_LEVEL_TICK.register(world -> {
             try {
                 StorageHelper.getStorage(world).tick();
             } catch (Exception e) {
                 GLLog.error("Error ticking GraphWorldStorage. World: '{}'/{}", world,
-                    world.dimension().location(), e);
+                    world.dimension().identifier(), e);
             }
         });
-        ServerWorldEvents.UNLOAD.register((server, world) -> {
+        ServerLevelEvents.UNLOAD.register((server, world) -> {
             try {
                 StorageHelper.getStorage(world).close();
             } catch (Exception e) {
                 GLLog.error("Error closing GraphWorldStorage. World: '{}'/{}", world,
-                    world.dimension().location(), e);
+                    world.dimension().identifier(), e);
             }
         });
 

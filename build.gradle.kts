@@ -1,5 +1,5 @@
 plugins {
-    id("fabric-loom") apply false
+    id("net.fabricmc.fabric-loom") apply false
     id("com.kneelawk.submodule") apply false
     id("com.kneelawk.mojmap") apply false
     id("com.kneelawk.versioning") apply false

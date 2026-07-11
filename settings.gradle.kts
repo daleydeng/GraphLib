@@ -1,5 +1,11 @@
 pluginManagement {
     repositories {
+        maven("https://maven.aliyun.com/repository/gradle-plugin") {
+            name = "AliyunGradlePlugin"
+        }
+        maven("https://maven.aliyun.com/repository/public") {
+            name = "AliyunPublic"
+        }
         maven("https://maven.quiltmc.org/repository/release") {
             name = "Quilt"
         }
@@ -19,7 +25,7 @@ pluginManagement {
     }
     plugins {
         val loom_version: String by settings
-        id("fabric-loom") version loom_version
+        id("net.fabricmc.fabric-loom") version loom_version
         val moddev_version: String by settings
         id("net.neoforged.moddev") version moddev_version
         val remapcheck_version: String by settings
@@ -34,7 +40,26 @@ pluginManagement {
 }
 
 plugins {
-    id("fabric-loom") apply false
+    id("net.fabricmc.fabric-loom") apply false
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenLocal()
+        maven("https://maven.aliyun.com/repository/public") {
+            name = "AliyunPublic"
+        }
+        maven("https://maven.aliyun.com/repository/central") {
+            name = "AliyunCentral"
+        }
+        maven("https://maven.fabricmc.net/") {
+            name = "Fabric"
+        }
+        maven("https://maven.kneelawk.com/releases/") {
+            name = "Kneelawk"
+        }
+        mavenCentral()
+    }
 }
 
 rootProject.name = "graphlib"
@@ -80,9 +105,9 @@ fun javadoc(enabled: Boolean, name: String) {
 }
 
 val xplat = true
-val mojmap = true
+val mojmap = false
 val fabric = true
-val neoforge = true
+val neoforge = false
 
 module(xplat, "core-xplat")
 module(mojmap, "core-xplat-mojmap")
@@ -102,7 +127,7 @@ module(neoforge, "core-neoforge")
 //module(neoforge, "syncing-knet-neoforge")
 //module(fabric, "syncing-lns")
 
-example("multiblock-lamps", xplat to "xplat", fabric to "fabric", neoforge to "neoforge")
+//example("multiblock-lamps", xplat to "xplat", fabric to "fabric", neoforge to "neoforge")
 
 //javadoc(xplat, "xplat")
 //javadoc(fabric, "fabric")
